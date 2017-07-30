@@ -7,8 +7,16 @@ import (
 )
 
 type Rover struct {
-	Position  Coords
-	Direction string
+	Position       Coords
+	Direction      string
+	DirectionIndex int
+}
+
+var directions = map[string]int{
+	"N": 1,
+	"E": 2,
+	"S": 3,
+	"W": 4,
 }
 
 func (rover *Rover) Place(i string) {
@@ -16,6 +24,7 @@ func (rover *Rover) Place(i string) {
 	rover.Position.X, _ = strconv.Atoi(words[0])
 	rover.Position.Y, _ = strconv.Atoi(words[1])
 	rover.Direction = words[2]
+	rover.DirectionIndex = directions[rover.Direction]
 }
 
 func (r *Rover) Move(s string, grid *Grid) {
@@ -27,30 +36,51 @@ func (r *Rover) Move(s string, grid *Grid) {
 	for _, char := range seq {
 		switch string(char) {
 		case "L":
-			if r.Position.X < 1 {
-				break
-			}
-			r.Position.X -= 1
+			r.rotate("left", grid)
 		case "R":
-			if (r.Position.X + 1) > grid.width {
-				break
-			}
-			r.Position.X += 1
+			r.rotate("right", grid)
 		case "M":
-			switch r.Direction {
-			case "N":
-				r.Position.Y += 1
-			case "E":
-				r.Position.X += 1
-			case "S":
-				r.Position.Y -= 1
-			case "W":
-				r.Position.X -= 1
-			default:
-				break
-			}
+			r.forward(grid)
 		default:
 			break
 		}
+	}
+}
+
+func (r *Rover) forward(grid *Grid) {
+	switch r.Direction {
+	case "N":
+		if r.Position.Y < grid.height {
+			r.Position.Y += 1
+		}
+	case "E":
+		if r.Position.X < grid.width {
+			r.Position.X += 1
+		}
+	case "S":
+		if r.Position.Y > 1 {
+			r.Position.Y -= 1
+		}
+	case "W":
+		if r.Position.X > 1 {
+			r.Position.X -= 1
+		}
+	default:
+		break
+	}
+}
+
+func (r *Rover) rotate(dir string, grid *Grid) {
+	switch dir {
+	case "left":
+		if r.DirectionIndex > 1 {
+			r.DirectionIndex = directions[r.Direction] - 1
+		}
+	case "right":
+		if r.DirectionIndex < 4 {
+			r.DirectionIndex = directions[r.Direction] + 1
+		}
+	default:
+		break
 	}
 }
